@@ -6,10 +6,10 @@ def save_records(info):
 
 
 def load_records():
-    with open("accounts.json", "r") as file:
-        try:
+    try:
+        with open("accounts.json", "r") as file:
             return json.load(file) or {}
-        except FileNotFoundError:
-            return {}
-        except json.JSONDecodeError:
-            return {}
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        return {}
