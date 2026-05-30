@@ -1,7 +1,7 @@
 import time
 from storage import save_records, load_records
 from utils import clear_screen, exit
-from service import create_database, log_expense
+from service import create_database, log_expense, add_income, envelope_transfer, view_envelopes, display_available, envelope_loop
 
 
 user_database = load_records()
@@ -10,7 +10,9 @@ user_database = load_records()
 def check_records(data):
     if data:
         data = records_menu(data)
-    main_menu()
+    else:
+        data = create_database()
+    return data
 
 
 
@@ -42,7 +44,8 @@ def records_menu(state):
     
 
 
-def main_menu():
+def main_menu(data):
+    data = check_records(data)
     while True:
         clear_screen()
         print("Welcome to Budget Buddy!")
@@ -61,13 +64,13 @@ def main_menu():
                 time.sleep(1)
             else:
                 if user_choice == 1:
-                    add_transaction_menu()
+                    add_transaction_menu(data)
                 elif user_choice == 2:
-                    envelope_transfer_menu()
+                    envelope_transfer_menu(data)
                 elif user_choice == 3:
-                    manage_envelopes_menu()
+                    manage_envelopes_menu(data)
                 elif user_choice == 4:
-                    view_transactions_menu()
+                    view_transactions_menu(data)
                 elif user_choice == 5:
                     exit()
 
@@ -78,28 +81,31 @@ def main_menu():
 
 
 
-def add_transaction_menu():
+def add_transaction_menu(data):
     while True:
         clear_screen()
         print("Select transaction type")
         print(" 1. Log expense")
         print(" 2. Add income")
         print(" 3. Fill from available")
+        print(" 0. Back")
 
         try:
             user_choice = int(input("\nYour choice: "))
 
-            if user_choice not in range(1, 4):
+            if user_choice not in range(0, 4):
                 clear_screen()
                 print("User choice not in range! Kindly try again")
                 time.sleep(1)
             else:
                 if user_choice == 1:
-                    log_expense_menu(user_database)
+                    log_expense_menu(data)
                 elif user_choice == 2:
-                    add_income_menu()
+                    add_income_menu(data)
                 elif user_choice == 3:
-                    fill_from_available_menu()
+                    fill_from_available_menu(data)
+                elif user_choice == 0:
+                    return
 
         except ValueError:
             clear_screen()
@@ -111,12 +117,20 @@ def add_transaction_menu():
 def log_expense_menu(user_data):
     while True:
         clear_screen()
-        print("Select envelope")
+        print("Select envelope\n")
+        user_data = view_envelopes(user_data)
+        print("\n 0. Back")
+
         try:
             envelope_num = int(input("\nYour choice: "))
-            amount = float("Enter amount: ")
+            if envelope_num == 0:
+                return
 
-            log_expense(user_data, envelope_num, amount)
+            clear_screen()
+            amount = float(input("Enter amount: "))
+
+            user_data = log_expense(user_data, envelope_num, amount)
+            return user_data
 
         except ValueError:
             clear_screen()
@@ -125,12 +139,16 @@ def log_expense_menu(user_data):
 
 
 
-def add_income_menu():
+def add_income_menu(user_data):
     while True:
         clear_screen()
         try:
             amount = float(input("Enter amount: "))
-            received_from = input("From: ")
+            clear_screen()
+            received_from = input("Received from: ").title()
+
+            user_data = add_income(user_data, amount, received_from)
+            return user_data
 
         except ValueError:
             clear_screen()
@@ -139,18 +157,44 @@ def add_income_menu():
 
 
 
-def fill_from_available_menu():
-    pass
-
-
-
-def envelope_transfer_menu():
+def fill_from_available_menu(user_data):
     while True:
         clear_screen()
+        user_data = display_available(user_data)
         try:
-            from_envelope = input("From: ")
-            to_envelope = input("To: ")
-            amount = float(input("Enter amount: "))
+            user_choice = input("\nProceed to fill each envelope? (y/n): ").lower().strip()
+
+            if user_choice == "y":
+                user_data = envelope_loop(user_data)
+            elif user_choice == "n":
+                return
+
+        except ValueError:
+            clear_screen()
+            print("Invalid input! Try again")
+            time.sleep(1)
+
+
+
+def envelope_transfer_menu(user_data):
+    while True:
+        clear_screen()
+        print("Your envelopes\n")
+        user_data = view_envelopes(user_data)
+        try:
+            user_choice = input("\nWant to proceed with transfer? (y/n): ").lower().strip()
+
+            if user_choice == "y":
+                clear_screen()
+                from_envelope = input("From: ").title().strip()
+                to_envelope = input("To: ").title().strip()
+                amount = float(input("Enter amount: "))
+
+                user_data = envelope_transfer(user_data, from_envelope, to_envelope, amount)
+                return user_data
+            
+            elif user_choice == "n":
+                return
 
         except ValueError:
             clear_screen()
@@ -172,4 +216,4 @@ def view_transactions_menu():
 
 if __name__ == "__main__":
     clear_screen(0)
-    check_records(user_database)
+    main_menu(user_database)
