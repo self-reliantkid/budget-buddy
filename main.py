@@ -1,7 +1,8 @@
 import time
+import sys
 from storage import save_records, load_records
-from utils import clear_screen, exit
-from service import create_database, log_expense, add_income, envelope_transfer, view_envelopes, display_available, envelope_loop
+from utils import clear_screen
+from service import create_database, log_expense, add_income, envelope_transfer, view_envelopes, display_available, envelope_loop, view_transactions
 
 
 user_database = load_records()
@@ -72,7 +73,7 @@ def main_menu(data):
                 elif user_choice == 4:
                     view_transactions_menu(data)
                 elif user_choice == 5:
-                    exit()
+                    exit(data)
 
         except ValueError:
             clear_screen()
@@ -129,7 +130,12 @@ def log_expense_menu(user_data):
             clear_screen()
             amount = float(input("Enter amount: "))
 
-            user_data = log_expense(user_data, envelope_num, amount)
+            clear_screen()
+            purpose = input("Purpose: ").strip().title()
+
+            user_data = log_expense(user_data, envelope_num, amount, purpose)
+            print(user_data)
+            time.sleep(3)
             return user_data
 
         except ValueError:
@@ -188,6 +194,7 @@ def envelope_transfer_menu(user_data):
                 clear_screen()
                 from_envelope = input("From: ").title().strip()
                 to_envelope = input("To: ").title().strip()
+                clear_screen()
                 amount = float(input("Enter amount: "))
 
                 user_data = envelope_transfer(user_data, from_envelope, to_envelope, amount)
@@ -204,13 +211,30 @@ def envelope_transfer_menu(user_data):
 
 
 
-def manage_envelopes_menu():
+def manage_envelopes_menu(user_data):
     pass
 
 
 
-def view_transactions_menu():
+def view_transactions_menu(user_data):
+    clear_screen()
+    user_data = view_transactions(user_data)
     pass
+
+
+
+def exit(user_data, n=6):
+    save_records(user_data)
+    clear_screen(0.5)
+    print("Quitting program", end="", flush=True)
+
+    for _ in range(n):
+        time.sleep(0.3)
+        print(".", end="", flush=True)
+
+    clear_screen()
+    print("Program quit successful!")
+    sys.exit()
 
 
 
