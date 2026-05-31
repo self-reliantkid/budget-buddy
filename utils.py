@@ -1,7 +1,7 @@
 import os
 import platform
 import time
-import sys
+from datetime import datetime
 
 
 def clear_screen(t=0.8):
@@ -13,14 +13,17 @@ def clear_screen(t=0.8):
 
 
 
-def exit(n=6):
-    clear_screen(0.5)
-    print("Quitting program", end="", flush=True)
+def get_current_date():
+    date = datetime.now().strftime("%d-%m-%Y")
+    return date
 
-    for _ in range(n):
-        time.sleep(0.3)
-        print(".", end="", flush=True)
 
-    clear_screen()
-    print("Program quit successful!")
-    sys.exit()
+
+def num_count(info):
+    new_num = 1
+
+    if info:
+        current_num = max(list(info))
+        new_num = current_num + 1
+
+    return new_num
