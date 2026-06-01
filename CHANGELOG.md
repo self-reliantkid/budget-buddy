@@ -4,6 +4,8 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+ - 2026-06-01 - 'feat: manage envelopes, set budgets, display format of envelopes'
+
  - 2026-05-31 - 'feat: save records before exit, log transactions, display transactions in neat format'
 
  - 2026-05-31 - 'feat: retrieve current date, auto number generation for transaction'
