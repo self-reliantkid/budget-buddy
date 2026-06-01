@@ -5,6 +5,7 @@ def create_database():
     account = {
         "available": 0.00, 
         "envelopes": {},
+        "budgets": {},
         "transactions": {}
     }
     return account
@@ -34,7 +35,7 @@ def view_envelopes(user_db):
         
     if envelopes:
         for i, envelope in enumerate(envelopes, start=1):
-            print(f"\t{i}. {envelope.title()} - {user_db["envelopes"][envelope]:.2f}")
+            print(f"\t{i}. {envelope.title()} - (Balance: {user_db["envelopes"][envelope]:.2f}) - (Weekly Budget: {user_db["budgets"][envelope]:.2f})")
     else:
         print("No envelopes available to display")
     return user_db
@@ -146,4 +147,21 @@ def view_transactions(user_db):
     else:
         print("No transactions yet!")
     
+    return user_db
+
+
+
+def add_envelope(user_db, env_name, wk_budget):
+    try:
+        envelopes = user_db["envelopes"]
+        budgets = user_db["budgets"]
+
+        envelopes[env_name] = 0.00
+        budgets[env_name] = wk_budget
+
+        clear_screen()
+        print("Envelope created successfully!")
+        time.sleep(1.3)
+    except:
+        pass
     return user_db

@@ -2,7 +2,8 @@ import time
 import sys
 from storage import save_records, load_records
 from utils import clear_screen
-from service import create_database, log_expense, add_income, envelope_transfer, view_envelopes, display_available, envelope_loop, view_transactions
+
+from service import create_database, log_expense, add_income, envelope_transfer, view_envelopes, display_available, envelope_loop, view_transactions, add_envelope
 
 
 user_database = load_records()
@@ -211,8 +212,74 @@ def envelope_transfer_menu(user_data):
 
 
 
-def manage_envelopes_menu(user_data):
-    pass
+def manage_envelopes_menu(data):
+    while True:
+        clear_screen()
+        print("Your envelopes\n")
+        data = view_envelopes(data)
+        try:
+            user_choice = input("\nWant to proceed? (y/n): ").lower().strip()
+
+            if user_choice == "y":
+                manage_envelopes_submenu(data)
+            elif user_choice == "n":
+                return
+
+        except ValueError:
+            clear_screen()
+            print("Invalid input! Try again")
+            time.sleep(1)
+
+
+
+def manage_envelopes_submenu(data):
+    while True:
+        clear_screen()
+        print("Select action")
+        print(" 1. Add weekly envelope")
+        print(" 2. Edit envelope")
+        print(" 3. Delete envelope")
+        print(" 0. Back")
+        try:
+            user_choice = int(input("\nYour choice: "))
+
+            if user_choice not in range(0, 4):
+                clear_screen()
+                print("User choice not in range! Kindly try again")
+                time.sleep(1)
+            else:
+                if user_choice == 1:
+                    add_envelope_menu(data)
+                elif user_choice == 2:
+                    pass
+                elif user_choice == 3:
+                    pass
+                elif user_choice == 0:
+                    return
+        
+        except ValueError:
+            clear_screen()
+            print("Invalid input! Try again")
+            time.sleep(1)
+
+
+
+def add_envelope_menu(user_data):
+    while True:
+        clear_screen()
+        try:
+            name = input("Envelope name: ").title().strip()
+            clear_screen()
+
+            budget = float(input("Budget: "))
+
+            user_data = add_envelope(user_data, name, budget)
+            return user_data
+        
+        except ValueError:
+            clear_screen()
+            print("Invalid input! Try again")
+            time.sleep(1)
 
 
 
