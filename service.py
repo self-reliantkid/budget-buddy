@@ -32,13 +32,18 @@ def view_envelopes(user_db):
         envelopes = list(user_db["envelopes"].keys())
     except KeyError:
         envelopes = None
+    except TypeError:
+        envelopes = None
         
     if envelopes:
+        yn = True
         for i, envelope in enumerate(envelopes, start=1):
             print(f"\t{i}. {envelope.title()} - (Balance: {user_db["envelopes"][envelope]:.2f}) - (Weekly Budget: {user_db["budgets"][envelope]:.2f})")
     else:
         print("No envelopes available to display")
-    return user_db
+        yn = False
+
+    return user_db, yn
 
 
 
@@ -164,4 +169,42 @@ def add_envelope(user_db, env_name, wk_budget):
         time.sleep(1.3)
     except:
         pass
+    return user_db
+
+
+
+def edit_envelope_name(user_db, env, n_name):
+    try:
+        envelope = list(user_db["envelopes"].keys())[env-1]
+        user_db["envelopes"][n_name] = user_db["envelopes"].pop(envelope)
+        user_db["budgets"][n_name] = user_db["budgets"].pop(envelope)
+
+    except IndexError:
+        print("User choice not in range! Kindly try again")
+
+    return user_db
+
+
+
+def edit_envelope_budget(user_db, n_budget):
+    try:
+        envelope = list(user_db["budgets"].keys())[-1]
+        user_db["budgets"][envelope] = n_budget
+
+    except IndexError:
+        print("User choice not in range! Kindly try again")
+
+    return user_db
+
+
+
+def delete_envelope(user_db, env):
+    try:
+        envelope = list(user_db["envelopes"].keys())[env-1]
+        print(f"{envelope} successfully deleted!")
+        del user_db["envelopes"][envelope]
+
+    except IndexError:
+        print("User choice not in range! Kindly try again")
+
     return user_db

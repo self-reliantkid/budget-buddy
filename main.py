@@ -3,7 +3,7 @@ import sys
 from storage import save_records, load_records
 from utils import clear_screen
 
-from service import create_database, log_expense, add_income, envelope_transfer, view_envelopes, display_available, envelope_loop, view_transactions, add_envelope
+from service import create_database, log_expense, add_income, envelope_transfer, view_envelopes, display_available, envelope_loop, view_transactions, add_envelope, edit_envelope_name, edit_envelope_budget, delete_envelope
 
 
 user_database = load_records()
@@ -120,7 +120,7 @@ def log_expense_menu(user_data):
     while True:
         clear_screen()
         print("Select envelope\n")
-        user_data = view_envelopes(user_data)
+        user_data, _ = view_envelopes(user_data)
         print("\n 0. Back")
 
         try:
@@ -187,7 +187,7 @@ def envelope_transfer_menu(user_data):
     while True:
         clear_screen()
         print("Your envelopes\n")
-        user_data = view_envelopes(user_data)
+        user_data, _ = view_envelopes(user_data)
         try:
             user_choice = input("\nWant to proceed with transfer? (y/n): ").lower().strip()
 
@@ -211,28 +211,7 @@ def envelope_transfer_menu(user_data):
 
 
 
-
 def manage_envelopes_menu(data):
-    while True:
-        clear_screen()
-        print("Your envelopes\n")
-        data = view_envelopes(data)
-        try:
-            user_choice = input("\nWant to proceed? (y/n): ").lower().strip()
-
-            if user_choice == "y":
-                manage_envelopes_submenu(data)
-            elif user_choice == "n":
-                return
-
-        except ValueError:
-            clear_screen()
-            print("Invalid input! Try again")
-            time.sleep(1)
-
-
-
-def manage_envelopes_submenu(data):
     while True:
         clear_screen()
         print("Select action")
@@ -251,9 +230,9 @@ def manage_envelopes_submenu(data):
                 if user_choice == 1:
                     add_envelope_menu(data)
                 elif user_choice == 2:
-                    pass
+                    edit_envelope_menu(data)
                 elif user_choice == 3:
-                    pass
+                    delete_envelope_menu(data)
                 elif user_choice == 0:
                     return
         
@@ -283,10 +262,78 @@ def add_envelope_menu(user_data):
 
 
 
+def edit_envelope_menu(user_data):
+    while True:
+        clear_screen()
+        print("Select envelope\n")
+        user_data, state = view_envelopes(user_data)
+        print("\n 0. Back")
+
+        try:
+            envelope_num = int(input("\nYour choice: "))
+            if envelope_num == 0 or state == False:
+                return
+
+            clear_screen()
+            user_choice_name = input("Edit envelope name? (y/n): ").strip().lower()
+            
+            if user_choice_name == "y":
+                clear_screen()
+                new_name = input("Enter new name: ").title().strip()
+                user_data = edit_envelope_name(user_data, envelope_num, new_name)
+
+            clear_screen()
+            user_choice_budget = input("Edit weekly budget? (y/n): ").strip().lower()
+
+            if user_choice_budget == "y":
+                clear_screen()
+                new_budget = float(input("Enter new budget: "))
+                user_data = edit_envelope_budget(user_data, new_budget)
+
+            return user_data
+
+        except ValueError:
+            clear_screen()
+            print("Invalid input! Try again")
+            time.sleep(1)
+            
+
+
+
+def delete_envelope_menu(user_data):
+    while True:
+        clear_screen()
+        print("Select envelope\n")
+        user_data, state = view_envelopes(user_data)
+        print("\n 0. Back")
+
+        try:
+            envelope_num = int(input("\nYour choice: "))
+            if envelope_num == 0 or state == False:
+                return
+
+            clear_screen()
+            user_choice = input("Are you sure you want to delete?(y/n): ").strip().lower()
+
+            if user_choice == "y":
+                user_data = delete_envelope(user_data, envelope_num)
+            elif user_choice == "n":
+                return
+
+            return user_data
+
+        except ValueError:
+            clear_screen()
+            print("Invalid input! Try again")
+            time.sleep(1)
+
+
+
 def view_transactions_menu(user_data):
     clear_screen()
-    user_data = view_transactions(user_data)
-    pass
+    view_transactions(user_data)
+
+    back_to_main = input("Press enter to return to main menu! ")
 
 
 
