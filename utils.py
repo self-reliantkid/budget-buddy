@@ -24,6 +24,6 @@ def num_count(info):
 
     if info:
         current_num = max(list(info))
-        new_num = current_num + 1
+        new_num = int(current_num) + 1
 
     return new_num
