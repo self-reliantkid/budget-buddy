@@ -4,6 +4,8 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+ - 2026-09-25 - 'feat: add budgeted amounts from fills, edit envelope budget'
+
  - 2026-09-24 - 'feat: edit envelopes, delete envelopes'
 
  - 2026-06-01 - 'feat: manage envelopes, set budgets, display format of envelopes'
