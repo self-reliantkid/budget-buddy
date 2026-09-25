@@ -120,12 +120,15 @@ def log_expense_menu(user_data):
     while True:
         clear_screen()
         print("Select envelope\n")
-        user_data, _ = view_envelopes(user_data)
+        user_data, state = view_envelopes(user_data)
         print("\n 0. Back")
 
         try:
             envelope_num = int(input("\nYour choice: "))
-            if envelope_num == 0:
+            if envelope_num == 0 or state == False:
+                clear_screen()
+                print("Envelopes required before expense can be logged!")
+                time.sleep(1.2)
                 return
 
             clear_screen()
@@ -288,7 +291,7 @@ def edit_envelope_menu(user_data):
             if user_choice_budget == "y":
                 clear_screen()
                 new_budget = float(input("Enter new budget: "))
-                user_data = edit_envelope_budget(user_data, new_budget)
+                user_data = edit_envelope_budget(user_data, envelope_num, new_budget)
 
             return user_data
 

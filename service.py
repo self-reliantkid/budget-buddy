@@ -82,9 +82,17 @@ def envelope_loop(user_db):
         for envelope in envelopes:
             clear_screen()
             print(f"{envelope.title()} - {user_db["envelopes"][envelope]:.2f}")
-            amt = float(input("Amount to add: "))
-            user_db["envelopes"][envelope] += amt
-            user_db["available"] -= amt
+            
+            add_bgt = input("Add budgeted amount? (y/n): ").strip().lower()
+
+            if add_bgt == "y":
+                user_db["envelopes"][envelope] += user_db["budgets"][envelope]
+                user_db["available"] -= user_db["budgets"][envelope]
+            else:
+                clear_screen()
+                amt = float(input("Amount to add: "))
+                user_db["envelopes"][envelope] += amt
+                user_db["available"] -= amt
         clear_screen()
         print("All amounts have been added!")
         time.sleep(1.5)
@@ -186,9 +194,18 @@ def edit_envelope_name(user_db, env, n_name):
 
 
 
-def edit_envelope_budget(user_db, n_budget):
+def edit_envelope_budget(user_db, env, n_budget):
     try:
-        envelope = list(user_db["budgets"].keys())[-1]
+        en = list(user_db["envelopes"].keys())[env-1]
+        bgt = list(user_db["budgets"].keys())[env-1]
+
+        envelope = None
+
+        if en == bgt:
+            envelope = list(user_db["budgets"].keys())[env-1]
+        else:
+            envelope = list(user_db["budgets"].keys())[-1]
+
         user_db["budgets"][envelope] = n_budget
 
     except IndexError:
