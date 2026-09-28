@@ -120,7 +120,7 @@ def log_expense_menu(user_data):
     while True:
         clear_screen()
         print("Select envelope\n")
-        user_data, state = view_envelopes(user_data)
+        user_data, state, limit = view_envelopes(user_data)
         print("\n 0. Back")
 
         try:
@@ -130,6 +130,11 @@ def log_expense_menu(user_data):
                 print("Envelopes required before expense can be logged!")
                 time.sleep(1.2)
                 return
+            if envelope_num not in range(1, limit + 1):
+                clear_screen()
+                print("Envelope not in list!")
+                time.sleep(1)
+                return
 
             clear_screen()
             amount = float(input("Enter amount: "))
@@ -138,8 +143,7 @@ def log_expense_menu(user_data):
             purpose = input("Purpose: ").strip().title()
 
             user_data = log_expense(user_data, envelope_num, amount, purpose)
-            print(user_data)
-            time.sleep(3)
+            time.sleep(1)
             return user_data
 
         except ValueError:
@@ -190,18 +194,25 @@ def envelope_transfer_menu(user_data):
     while True:
         clear_screen()
         print("Your envelopes\n")
-        user_data, _ = view_envelopes(user_data)
+        user_data, _, _ = view_envelopes(user_data)
         try:
             user_choice = input("\nWant to proceed with transfer? (y/n): ").lower().strip()
 
             if user_choice == "y":
                 clear_screen()
-                from_envelope = input("From: ").title().strip()
-                to_envelope = input("To: ").title().strip()
+                user_data, _, limit = view_envelopes(user_data) 
+
+                from_envelope = int(input("From: "))
+                to_envelope = int(input("To: "))
+
                 clear_screen()
                 amount = float(input("Enter amount: "))
 
+                if from_envelope not in range(1, limit + 1) or to_envelope not in range(1, limit + 1):
+                    return
+                
                 user_data = envelope_transfer(user_data, from_envelope, to_envelope, amount)
+
                 return user_data
             
             elif user_choice == "n":
@@ -269,12 +280,14 @@ def edit_envelope_menu(user_data):
     while True:
         clear_screen()
         print("Select envelope\n")
-        user_data, state = view_envelopes(user_data)
+        user_data, state, limit = view_envelopes(user_data)
         print("\n 0. Back")
 
         try:
             envelope_num = int(input("\nYour choice: "))
             if envelope_num == 0 or state == False:
+                return
+            if envelope_num not in range(1, limit + 1):
                 return
 
             clear_screen()
@@ -307,12 +320,12 @@ def delete_envelope_menu(user_data):
     while True:
         clear_screen()
         print("Select envelope\n")
-        user_data, state = view_envelopes(user_data)
+        user_data, state, limit = view_envelopes(user_data)
         print("\n 0. Back")
 
         try:
             envelope_num = int(input("\nYour choice: "))
-            if envelope_num == 0 or state == False:
+            if envelope_num == 0 or state == False or envelope_num not in range(1, limit + 1):
                 return
 
             clear_screen()

@@ -5,9 +5,9 @@ def create_database():
     account = {
         "available": 0.00, 
         "envelopes": {},
-        "budgets": {},
         "transactions": {}
     }
+
     return account
 
 
@@ -15,8 +15,8 @@ def create_database():
 def log_expense(user_db, env, amt, purp):
     try:
         envelope = list(user_db["envelopes"].keys())[env-1]
-        user_db["envelopes"][envelope] += amt
-        print(f"{amt:.2f} has been added to {envelope}!")
+        user_db["envelopes"][envelope]["balance"] -= amt
+        print(f"Expense logged successfully!")
 
         user_db = log_transaction(user_db, "Expense", amt, envelope, purp)
         time.sleep(1.5)
@@ -38,12 +38,12 @@ def view_envelopes(user_db):
     if envelopes:
         yn = True
         for i, envelope in enumerate(envelopes, start=1):
-            print(f"\t{i}. {envelope.title()} - (Balance: {user_db["envelopes"][envelope]:.2f}) - (Weekly Budget: {user_db["budgets"][envelope]:.2f})")
+            print(f'\t{i}. {envelope.title()} - (Balance: {user_db["envelopes"][envelope]["balance"]:.2f}) - (Weekly Budget: {user_db["envelopes"][envelope]["budget"]:.2f})')
     else:
         print("No envelopes available to display")
         yn = False
 
-    return user_db, yn
+    return user_db, yn, len(envelopes)
 
 
 
@@ -81,17 +81,17 @@ def envelope_loop(user_db):
     if envelopes:
         for envelope in envelopes:
             clear_screen()
-            print(f"{envelope.title()} - {user_db["envelopes"][envelope]:.2f}")
+            print(f'{envelope.title()} - {user_db["envelopes"][envelope]["balance"]:.2f}')
             
             add_bgt = input("Add budgeted amount? (y/n): ").strip().lower()
 
             if add_bgt == "y":
-                user_db["envelopes"][envelope] += user_db["budgets"][envelope]
-                user_db["available"] -= user_db["budgets"][envelope]
+                user_db["envelopes"][envelope]["balance"] += user_db["envelopes"][envelope]["budget"]
+                user_db["available"] -= user_db["envelopes"][envelope]["budget"]
             else:
                 clear_screen()
                 amt = float(input("Amount to add: "))
-                user_db["envelopes"][envelope] += amt
+                user_db["envelopes"][envelope]["balance"] += amt
                 user_db["available"] -= amt
         clear_screen()
         print("All amounts have been added!")
@@ -105,20 +105,31 @@ def envelope_loop(user_db):
 
 def envelope_transfer(user_db, frm, to, amt):
     try:
-        if amt > user_db["envelopes"][frm]:
+        envelopes_list = list(user_db["envelopes"].keys())
+        from_env = envelopes_list[frm - 1]
+        to_env = envelopes_list[to - 1]
+    
+        if amt > user_db["envelopes"][from_env]["balance"]:
             print("Insufficient funds to complete this transaction!")
+        elif amt < 0:
+            print("Negative funds cannot be transferred!")
+        elif frm == to:
+            print("Cannot transfer to same envelope!")
         else:
-            user_db["envelopes"][frm] -= amt
-            user_db["envelopes"][to] += amt
-            print(f"{amt:.2f} transferred from '{frm}' to '{to}'")
-    except KeyError:
+            user_db["envelopes"][to_env]["balance"] += amt
+            user_db["envelopes"][from_env]["balance"] -= amt
+            print(f"{amt:.2f} transferred from '{from_env}' to '{to_env}'")
+
+            user_db = log_transaction(user_db, "Envelope Transfer", amt, None, None, from_env, to_env)
+
+    except IndexError:
         print("Invalid! Try again")
 
     return user_db
 
 
 
-def log_transaction(user_dtb, trans_type, amount, env="", purpose=""):
+def log_transaction(user_dtb, trans_type, amount, env="", purpose="", f_env="", t_env=""):
     transactions = user_dtb["transactions"]
     id = num_count(transactions)
     date = get_current_date()
@@ -128,6 +139,8 @@ def log_transaction(user_dtb, trans_type, amount, env="", purpose=""):
         example.extend([trans_type, amount, env, purpose, date])
     elif trans_type == "Add Income":
         example.extend([trans_type, amount, purpose, date])
+    elif trans_type == "Envelope Transfer":
+        example.extend([trans_type, amount, f_env, t_env, date])
     else:
         example.extend([trans_type, amount, date])
     
@@ -144,17 +157,27 @@ def view_transactions(user_db):
             print(f"{i}.")
             print(f"Transaction type: {value[0]}")
             print(f"Amount: {value[1]}")
+
             if value[0] == "Expense":
                 try: 
-                    print(f"Envelope: ")
-                    print(f"Purpose: ")
+                    print(f"Envelope: {value[2]}")
+                    print(f"Purpose: {value[3]}")
                 except:
                     pass
+
             elif value[0] == "Add Income":
                 try:
                     print(f"Received from: {value[2]}")
                 except:
                     pass
+
+            elif value[0] == "Envelope Transfer":
+                try:
+                    print(f"From: {value[2]}")
+                    print(f"To: {value[3]}")
+                except:
+                    pass
+
             print(f"Date: {value[-1]}\n\n")
 
     else:
@@ -167,14 +190,19 @@ def view_transactions(user_db):
 def add_envelope(user_db, env_name, wk_budget):
     try:
         envelopes = user_db["envelopes"]
-        budgets = user_db["budgets"]
 
-        envelopes[env_name] = 0.00
-        budgets[env_name] = wk_budget
+        if env_name in list(envelopes.keys()):
+            print("Envelope already exists!")
 
-        clear_screen()
-        print("Envelope created successfully!")
-        time.sleep(1.3)
+        else:
+            envelopes[env_name] = {}
+
+            envelopes[env_name]["balance"] = 0.00
+            envelopes[env_name]["budget"] = wk_budget
+
+            clear_screen()
+            print("Envelope created successfully!")
+            time.sleep(1.3)
     except:
         pass
     return user_db
@@ -183,9 +211,13 @@ def add_envelope(user_db, env_name, wk_budget):
 
 def edit_envelope_name(user_db, env, n_name):
     try:
-        envelope = list(user_db["envelopes"].keys())[env-1]
-        user_db["envelopes"][n_name] = user_db["envelopes"].pop(envelope)
-        user_db["budgets"][n_name] = user_db["budgets"].pop(envelope)
+        envelopes = list(user_db["envelopes"].keys())
+        envelope = envelopes[env-1]
+
+        if n_name in envelopes:
+            print("Cannot edit envelope name to already existing envelope!")
+        else:
+            user_db["envelopes"] = {(n_name if k == envelope else k): v for k, v in user_db["envelopes"].items()}
 
     except IndexError:
         print("User choice not in range! Kindly try again")
@@ -196,17 +228,8 @@ def edit_envelope_name(user_db, env, n_name):
 
 def edit_envelope_budget(user_db, env, n_budget):
     try:
-        en = list(user_db["envelopes"].keys())[env-1]
-        bgt = list(user_db["budgets"].keys())[env-1]
-
-        envelope = None
-
-        if en == bgt:
-            envelope = list(user_db["budgets"].keys())[env-1]
-        else:
-            envelope = list(user_db["budgets"].keys())[-1]
-
-        user_db["budgets"][envelope] = n_budget
+        envelope = list(user_db["envelopes"].keys())[env-1]
+        user_db["envelopes"][envelope]["budget"] = n_budget
 
     except IndexError:
         print("User choice not in range! Kindly try again")
@@ -218,7 +241,16 @@ def edit_envelope_budget(user_db, env, n_budget):
 def delete_envelope(user_db, env):
     try:
         envelope = list(user_db["envelopes"].keys())[env-1]
-        print(f"{envelope} successfully deleted!")
+
+        if user_db["envelopes"][envelope]["balance"] > 0:
+            user_db["available"] += user_db["envelopes"][envelope]["balance"]
+            print(f"{envelope} successfully deleted! All remaining funds transferred to Available")
+        elif user_db["envelopes"][envelope]["balance"] < 0:
+            user_db["available"] -= user_db["envelopes"][envelope]["balance"]
+            print(f"{envelope} successfully deleted! Negative balance deducted from Available")
+        else:
+            print(f"{envelope} successfully deleted!")
+
         del user_db["envelopes"][envelope]
 
     except IndexError:
