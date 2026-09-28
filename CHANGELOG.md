@@ -4,6 +4,8 @@ All notable changes to this project will be documented here.
 
 ## [Unreleased]
 
+ - 2026-09-28 - 'fix: envelope restructure with budget, unsafe transfers, invalid menu input'
+
  - 2026-09-25 - 'feat: add budgeted amounts from fills, edit envelope budget'
 
  - 2026-09-24 - 'feat: edit envelopes, delete envelopes'
